@@ -87,12 +87,23 @@ class DebugPDOStatement extends PDOStatement
 	public function execute($input_parameters = null)
 	{
 		$debug	= $this->pdo->getDebugSnapshot();
-		$return	= parent::execute($input_parameters);
+
+		$exception = null;
+		try {
+			$return	= parent::execute($input_parameters);
+		} catch (Exception $e) {
+			$exception = $e;
+		}
 
 		$sql = $this->getExecutedQueryString();
 		$this->pdo->log($sql, null, __METHOD__, $debug);
 		$this->pdo->setLastExecutedQuery($sql);
 		$this->pdo->incrementQueryCount();
+
+		if ($exception)
+		{
+			throw new PropelPDOException("Unable to execute SQL:\n{$sql}.", $exception);
+		}
 
 		return $return;
 	}

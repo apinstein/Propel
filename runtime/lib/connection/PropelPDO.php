@@ -400,12 +400,21 @@ class PropelPDO extends PDO
 			$debug = $this->getDebugSnapshot();
 		}
 
-		$return = parent::exec($sql);
+		$exception = null;
+		try {
+			$return = parent::exec($sql);
+		} catch (PDOException $e) {
+			$exception = $e;
+		}
 
 		if ($this->useDebug) {
 			$this->log($sql, null, __METHOD__, $debug);
 			$this->setLastExecutedQuery($sql);
 			$this->incrementQueryCount();
+		}
+		if ($exception)
+		{
+			throw new PropelPDOException("Unable to execute SQL:\n{$sql}.", $exception);
 		}
 
 		return $return;
@@ -428,10 +437,16 @@ class PropelPDO extends PDO
 		}
 
 		$args = func_get_args();
-		if (version_compare(PHP_VERSION, '5.3', '<')) {
-			$return = call_user_func_array(array($this, 'parent::query'), $args);
-		} else {
-			$return = call_user_func_array('parent::query', $args);
+
+		$exception = null;
+		try {
+			if (version_compare(PHP_VERSION, '5.3', '<')) {
+				$return = call_user_func_array(array($this, 'parent::query'), $args);
+			} else {
+				$return = call_user_func_array('parent::query', $args);
+			}
+		} catch (PDOException $e) {
+			$exception = $e;
 		}
 
 		if ($this->useDebug) {
@@ -439,6 +454,10 @@ class PropelPDO extends PDO
 			$this->log($sql, null, __METHOD__, $debug);
 			$this->setLastExecutedQuery($sql);
 			$this->incrementQueryCount();
+		}
+		if ($exception)
+		{
+			throw new PropelPDOException("Unable to execute SQL:\n{$sql}.", $exception);
 		}
 
 		return $return;
