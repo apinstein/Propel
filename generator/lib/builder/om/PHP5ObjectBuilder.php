@@ -3673,7 +3673,7 @@ abstract class ".$this->getClassname()." extends ".$parentClass." ";
                 return 0;
             } else {
                 if(\$partial && !\$criteria) {
-                    return count(\$this->get$relCol());
+                    return count(\$this->get$relCol(NULL, \$con));
                 }
                 \$query = $fkQueryClassname::create(null, \$criteria);
                 if (\$distinct) {
